@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dashboard Explained — HeightSense</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #080c12; --panel: #0e1520; --border: #1a2535;
+    --accent: #00e5ff; --accent2: #7c3aed; --green: #00ff87;
+    --orange: #ff6b35; --red: #ff3d5a; --text: #e2e8f0;
+    --muted: #4a5568; --yellow: #ffd166;
+    --mono: 'Space Mono', monospace; --sans: 'Syne', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px; pointer-events: none; z-index: 0;
+  }
+
+  .page { position: relative; z-index: 1; max-width: 1300px; margin: 0 auto; padding: 30px 24px; }
+
+  /* PAGE TITLE */
+  .page-title {
+    text-align: center; margin-bottom: 40px;
+  }
+  .page-title h1 { font-size: 36px; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .page-title p { color: var(--muted); font-family: var(--mono); font-size: 12px; margin-top: 8px; }
+
+  /* NAVIGATION PILLS */
+  .nav-pills {
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 40px;
+  }
+  .pill {
+    padding: 8px 18px; border-radius: 999px; border: 1px solid var(--border);
+    font-family: var(--mono); font-size: 11px; cursor: pointer;
+    background: var(--panel); color: var(--muted); transition: all 0.2s;
+  }
+  .pill:hover, .pill.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.08); }
+
+  /* SECTION */
+  .section { margin-bottom: 48px; scroll-margin-top: 20px; }
+  .section-number {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #000; font-weight: 800; font-size: 16px; margin-bottom: 16px;
+  }
+  .section-title { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+  .section-sub { color: var(--muted); font-family: var(--mono); font-size: 12px; margin-bottom: 24px; }
+
+  /* CARD */
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+    overflow: hidden; margin-bottom: 20px; position: relative;
+  }
+  .card::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,229,255,0.3), transparent);
+  }
+  .card-header {
+    padding: 18px 24px 14px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .card-icon { font-size: 24px; }
+  .card-title { font-size: 18px; font-weight: 700; }
+  .card-tag {
+    margin-left: auto; font-family: var(--mono); font-size: 10px;
+    padding: 4px 10px; border-radius: 6px; background: rgba(0,229,255,0.1);
+    color: var(--accent); border: 1px solid rgba(0,229,255,0.2);
+  }
+  .card-body { padding: 24px; }
+
+  /* TWO COLUMN */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* VISUAL MOCK */
+  .mock {
+    background: #050810; border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; position: relative;
+  }
+  .mock-label {
+    position: absolute; top: -10px; left: 16px;
+    background: var(--accent); color: #000; font-family: var(--mono);
+    font-size: 9px; font-weight: 700; padding: 2px 10px; border-radius: 999px;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+
+  /* EXPLANATION TEXT */
+  .explain { color: var(--text); font-size: 15px; line-height: 1.8; }
+  .explain strong { color: var(--accent); }
+  .explain em { color: var(--yellow); font-style: normal; font-family: var(--mono); font-size: 13px; }
+
+  /* BULLET LIST */
+  .bullets { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+  .bullets li {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 16px; background: #050810; border-radius: 10px; border: 1px solid var(--border);
+    font-size: 14px; line-height: 1.6;
+  }
+  .bullets li .ico { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .bullets li strong { color: var(--green); }
+
+  /* HIGHLIGHT BOX */
+  .highlight-box {
+    border-radius: 12px; padding: 16px 20px; margin-top: 16px;
+    font-family: var(--mono); font-size: 12px; line-height: 1.8;
+  }
+  .highlight-box.blue  { background: rgba(0,229,255,0.06);  border: 1px solid rgba(0,229,255,0.2);  color: var(--accent); }
+  .highlight-box.green { background: rgba(0,255,135,0.06);  border: 1px solid rgba(0,255,135,0.2);  color: var(--green); }
+  .highlight-box.orange{ background: rgba(255,107,53,0.06); border: 1px solid rgba(255,107,53,0.2); color: var(--orange); }
+  .highlight-box.purple{ background: rgba(124,58,237,0.06); border: 1px solid rgba(124,58,237,0.2); color: #a78bfa; }
+  .highlight-box.yellow{ background: rgba(255,209,102,0.06);border: 1px solid rgba(255,209,102,0.2);color: var(--yellow); }
+
+  /* MOCK COMPONENTS */
+  .mock-header-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 20px; gap: 16px;
+  }
+  .mock-logo { display: flex; align-items: center; gap: 10px; }
+  .mock-logo-icon { width: 34px; height: 34px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .mock-logo-text { font-size: 16px; font-weight: 800; }
+  .mock-logo-sub { font-size: 9px; color: var(--muted); font-family: var(--mono); }
+
+  .mock-status { display: flex; align-items: center; gap: 8px; }
+  .mock-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse-dot 2s infinite; box-shadow: 0 0 0 3px rgba(0,255,135,0.2); }
+  @keyframes pulse-dot { 0%,100%{box-shadow:0 0 0 3px rgba(0,255,135,0.2)}50%{box-shadow:0 0 0 6px rgba(0,255,135,0.05)} }
+  .mock-status-text { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+  .mock-input { background: #0a1020; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); font-family: var(--mono); font-size: 10px; padding: 6px 10px; width: 160px; }
+  .mock-btn { background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; border-radius: 6px; color: #000; font-size: 10px; font-weight: 700; padding: 6px 12px; cursor: pointer; }
+
+  /* Height ring mock */
+  .mock-height-ring { display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 12px; }
+  .ring-wrap { position: relative; width: 140px; height: 140px; }
+  .ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .ring-num { font-family: var(--mono); font-size: 32px; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .ring-unit { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+  /* Confidence badge mock */
+  .mock-conf { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 999px; font-family: var(--mono); font-size: 10px; font-weight: 700; }
+  .conf-high-m   { background: rgba(0,255,135,0.1); color: var(--green); border: 1px solid rgba(0,255,135,0.3); }
+  .conf-medium-m { background: rgba(255,107,53,0.1); color: var(--orange); border: 1px solid rgba(255,107,53,0.3); }
+  .conf-low-m    { background: rgba(255,61,90,0.1); color: var(--red); border: 1px solid rgba(255,61,90,0.3); }
+
+  /* Silhouette mock */
+  .mock-sil { display: flex; align-items: flex-end; justify-content: center; gap: 30px; padding: 20px 20px 10px; }
+  .sil-person { display: flex; flex-direction: column; align-items: center; }
+  .sil-head { width: 22px; height: 22px; border-radius: 50%; background: var(--green); box-shadow: 0 0 15px rgba(0,255,135,0.4); margin-bottom: -2px; }
+  .sil-body { width: 22px; background: linear-gradient(180deg, var(--accent), var(--accent2)); border-radius: 3px 3px 0 0; }
+  .sil-sensor { font-size: 20px; margin-bottom: 8px; }
+  .sil-label { font-family: var(--mono); font-size: 9px; color: var(--muted); margin-top: 6px; }
+  .sil-ruler { display: flex; flex-direction: column; justify-content: space-between; height: 180px; }
+  .sil-tick { font-family: var(--mono); font-size: 9px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+  .sil-tick::before { content: ''; display: block; width: 8px; height: 1px; background: var(--border); }
+  .sil-arrow { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-family: var(--mono); font-size: 10px; color: var(--orange); }
+
+  /* Stats mock */
+  .mock-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .mock-stat { background: #050810; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+  .mock-stat-label { font-family: var(--mono); font-size: 8px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+  .mock-stat-val { font-family: var(--mono); font-size: 16px; font-weight: 700; }
+
+  /* Noise bars mock */
+  .mock-noise { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .mock-noise-row { display: flex; align-items: center; gap: 8px; }
+  .mock-noise-label { font-family: var(--mono); font-size: 9px; color: var(--muted); min-width: 70px; }
+  .mock-noise-track { flex: 1; height: 5px; background: var(--border); border-radius: 999px; overflow: hidden; }
+  .mock-noise-fill { height: 100%; border-radius: 999px; }
+  .mock-noise-pct { font-family: var(--mono); font-size: 9px; color: var(--muted); min-width: 28px; text-align: right; }
+
+  /* Signal strip mock */
+  .mock-signal { display: flex; gap: 2px; align-items: flex-end; height: 36px; margin-top: 10px; }
+  .mock-signal-bar { flex: 1; border-radius: 2px 2px 0 0; opacity: 0.7; }
+
+  /* History mock */
+  .mock-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 10px; }
+  .mock-table th { color: var(--muted); font-size: 8px; letter-spacing: 1px; text-transform: uppercase; padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; }
+  .mock-table td { padding: 7px 8px; border-bottom: 1px solid rgba(26,37,53,0.5); }
+  .mock-table tr:first-child td { color: var(--accent); }
+
+  /* Config mock */
+  .mock-config { display: flex; flex-direction: column; gap: 12px; }
+  .mock-config-row { display: flex; align-items: center; gap: 10px; }
+  .mock-config-label { font-family: var(--mono); font-size: 10px; color: var(--muted); min-width: 110px; }
+  .mock-config-input { background: #050810; border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: var(--mono); font-size: 11px; padding: 6px 10px; width: 80px; }
+  .mock-toggle { display: flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .mock-toggle-opt { padding: 6px 12px; background: transparent; border: none; color: var(--muted); font-family: var(--mono); font-size: 10px; }
+  .mock-toggle-opt.active { background: var(--accent); color: #000; font-weight: 700; }
+
+  /* Annotation arrow */
+  .anno {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 16px; background: rgba(255,209,102,0.05);
+    border: 1px solid rgba(255,209,102,0.15); border-radius: 10px; margin-top: 12px;
+  }
+  .anno-arrow { color: var(--yellow); font-size: 18px; flex-shrink: 0; }
+  .anno-text { font-size: 13px; line-height: 1.7; color: var(--text); }
+  .anno-text strong { color: var(--yellow); }
+
+  /* Flow diagram */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 16px 0; }
+  .flow-step {
+    background: #050810; border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 16px; font-family: var(--mono); font-size: 11px; text-align: center;
+    flex-shrink: 0;
+  }
+  .flow-step strong { display: block; color: var(--accent); font-size: 13px; margin-bottom: 3px; }
+  .flow-arrow { color: var(--muted); font-size: 18px; padding: 0 6px; }
+
+  /* divider */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TITLE -->
+  <div class="page-title">
+    <h1>📡 Dashboard Explained</h1>
+    <p>EVERY ELEMENT ON YOUR HEIGHTSENSE DASHBOARD — EXPLAINED SIMPLY</p>
+  </div>
+
+  <!-- NAV -->
+  <div class="nav-pills">
+    <div class="pill active" onclick="scrollTo('header')">1. Header Bar</div>
+    <div class="pill" onclick="scrollTo('height')">2. Height Display</div>
+    <div class="pill" onclick="scrollTo('silhouette')">3. Silhouette</div>
+    <div class="pill" onclick="scrollTo('stats')">4. Signal Stats</div>
+    <div class="pill" onclick="scrollTo('noise')">5. Noise Bars</div>
+    <div class="pill" onclick="scrollTo('signal')">6. Live Signal</div>
+    <div class="pill" onclick="scrollTo('config')">7. Config Panel</div>
+    <div class="pill" onclick="scrollTo('history')">8. History Table</div>
+  </div>
+
+  <!-- ===================== 1. HEADER ===================== -->
+  <div class="section" id="header">
+    <div class="section-number">1</div>
+    <div class="section-title">The Header Bar</div>
+    <div class="section-sub">TOP OF THE PAGE — ALWAYS VISIBLE</div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🔝</div>
+        <div class="card-title">What you see at the very top</div>
+        <div class="card-tag">ALWAYS VISIBLE</div>
+      </div>
+      <div class="card-body">
+        <div class="mock" style="margin-bottom:24px;">
+          <div class="mock-label">LIVE PREVIEW</div>
+          <div class="mock-header-bar">
+            <div class="mock-logo">
+              <div class="mock-logo-icon">📡</div>
+              <div>
+                <div class="mock-logo-text">HeightSense</div>
+                <div class="mock-logo-sub">ML-ASSISTED ULTRASONIC HEIGHT ESTIMATION</div>
+              </div>
+            </div>
+            <div class="mock-status">
+              <div class="mock-dot"></div>
+              <div class="mock-status-text">LIVE</div>
+            </div>
+            <input class="mock-input" value="http://172.22.196.91:5000"/>
+            <button class="mock-btn">CONNECT</button>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <p class="explain">The header has <strong>4 parts</strong>:</p>
+            <ul class="bullets">
+              <li><div class="ico">📡</div><div><strong>Logo (HeightSense)</strong> — just the project name. The subtitle "ML-ASSISTED ULTRASONIC HEIGHT ESTIMATION" describes what the system does.</div></li>
+              <li><div class="ico">🟢</div><div><strong>Status dot</strong> — Green + pulsing = your dashboard is receiving data. Grey = not connected. Red = error connecting to the server.</div></li>
+              <li><div class="ico">🌐</div><div><strong>Server URL box</strong> — This is where you type your PC's IP address. The dashboard uses this to know <em>where to send requests</em>. Example: <em>http://172.22.196.91:5000</em></div></li>
+              <li><div class="ico">🔘</div><div><strong>CONNECT button</strong> — Starts polling the backend every 1-2 seconds. Click again to disconnect.</div></li>
+            </ul>
+          </div>
+          <div>
+            <div class="highlight-box blue">
+              💡 WHAT IS "POLLING"?<br/><br/>
+              Every second, the dashboard quietly asks the backend:<br/>
+              "Hey, any new height readings?"<br/><br/>
+              If yes → update the display<br/>
+              If no → keep showing last reading<br/><br/>
+              This is how it stays "live" — it keeps asking over and over.
+            </div>
+            <div class="anno" style="margin-top:12px;">
+              <div class="anno-arrow">⚠️</div>
+              <div class="anno-text"><strong>If the dot is grey</strong> — either app.py isn't running, or you typed the wrong IP. Go back to your terminal and check.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- ===================== 2. HEIGHT DISPLAY ===================== -->
+  <div class="section" id="height">
+    <div class="section-number">2</div>
+    <div class="section-title">The Height Display Panel</div>
+    <div class="section-sub">TOP LEFT — THE MOST IMPORTANT NUMBER ON THE SCREEN</div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📏</div>
+        <div class="card-title">The Big Number — Estimated Height</div>
+        <div class="card-tag">MAIN OUTPUT</div>
+      </div>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="mock">
+            <div class="mock-label">LIVE PREVIEW</div>
+            <div class="mock-height-ring">
+              <div class="ring-wrap">
+                <svg viewBox="0 0 140 140">
+                  <defs>
+                    <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#00e5ff"/>
+                      <stop offset="100%" stop-color="#00ff87"/>
+                    </linearGradient>
+                  </defs>
+                  <circle fill="none" stroke="#1a2535" stroke-width="7" cx="70" cy="70" r="60"/>
+                  <circle fill="none" stroke="url(#rg)" stroke-width="7" stroke-linecap="round"
+                    cx="70" cy="70" r="60" stroke-dasharray="377" stroke-dashoffset="94"/>
+                </svg>
+                <div class="ring-center">
+                  <div class="ring-num">174.5</div>
+                  <div class="ring-unit">cm</div>
+                </div>
+              </div>
+              <div class="mock-conf conf-high-m">⬤ HIGH</div>
+              <div style="font-family:var(--mono);font-size:10px;color:var(--muted);">5′ 8″  •  Connect sensor to begin</div>
+              <div style="font-family:var(--mono);font-size:10px;color:#a78bfa;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.3);padding:3px 10px;border-radius:6px;">🤖 ML MODEL</div>
+            </div>
+          </div>
+          <div>
+            <ul class="bullets">
+              <li><div class="ico">🔵</div><div><strong>The circular ring</strong> — fills up like a progress bar based on how tall the person is. More filled = taller person. The gradient goes from cyan to green.</div></li>
+              <li><div class="ico">🔢</div><div><strong>The big number (174.5)</strong> — this is the ML model's best estimate of the person's height in centimetres. It updates every time the ESP8266 sends new data.</div></li>
+              <li><div class="ico">📐</div><div><strong>Feet & inches below</strong> — same height converted to feet/inches (e.g. 5′ 8″) for easier understanding.</div></li>
+              <li><div class="ico">🟢</div><div><strong>HIGH / MEDIUM / LOW badge</strong> — how confident the ML model is about this reading (explained below).</div></li>
+              <li><div class="ico">🤖</div><div><strong>ML MODEL tag</strong> — confirms the prediction came from the trained Random Forest model. If it says "MEDIAN FALLBACK" it means the model file wasn't loaded and it used a simpler backup method.</div></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="highlight-box yellow" style="margin-top:20px;">
+          🎯 HOW IS THE HEIGHT CALCULATED?<br/><br/>
+          Height = Sensor Height − Predicted Distance<br/><br/>
+          Example: Sensor is mounted 220cm above the floor.<br/>
+          ML model says the head is 45.5cm below the sensor.<br/>
+          So: 220 − 45.5 = 174.5cm ← person's height
+        </div>
+
+        <div style="margin-top:20px;">
+          <p class="explain" style="margin-bottom:12px;"><strong>What do HIGH / MEDIUM / LOW confidence mean?</strong></p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:#050810;border:1px solid rgba(0,255,135,0.2);border-radius:10px;">
+              <div class="mock-conf conf-high-m">⬤ HIGH</div>
+              <div style="font-size:13px;">Variance &lt; 100 AND less than 5% failed readings. The sensor got very clean, consistent echoes. <strong style="color:var(--green);">Trust this reading.</strong></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:#050810;border:1px solid rgba(255,107,53,0.2);border-radius:10px;">
+              <div class="mock-conf conf-medium-m">⬤ MEDIUM</div>
+              <div style="font-size:13px;">Variance &lt; 1000 AND less than 20% failed readings. Some noise from hair but still usable. <strong style="color:var(--orange);">Probably correct, ±5cm.</strong></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;background:#050810;border:1px solid rgba(255,61,90,0.2);border-radius:10px;">
+              <div class="mock-conf conf-low-m">⬤ LOW</div>
+              <div style="font-size:13px;">Very high variance OR many failed readings. Lots of noise, hair was probably absorbing most signals. <strong style="color:var(--red);">Take another measurement.</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- ===================== 3. SILHOUETTE ===================== -->
+  <div class="section" id="silhouette">
+    <div class="section-number">3</div>
+    <div class="section-title">The Silhouette / Visual Panel</div>
+    <div class="section-sub">TOP MIDDLE — SHOWS THE PHYSICAL SETUP VISUALLY</div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🧍</div>
+        <div class="card-title">The Person + Sensor Diagram</div>
+        <div class="card-tag">VISUAL AID</div>
+      </div>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="mock">
+            <div class="mock-label">LIVE PREVIEW</div>
+            <div class="mock-sil">
+              <div class="sil-ruler">
+                <div class="sil-tick">220cm</div>
+                <div class="sil-tick">210cm</div>
+                <div class="sil-tick" style="color:var(--accent)">200cm</div>
+                <div class="sil-tick">190cm</div>
+                <div class="sil-tick" style="color:var(--accent)">180cm</div>
+                <div class="sil-tick">170cm</div>
+                <div class="sil-tick" style="color:var(--accent)">160cm</div>
+                <div class="sil-tick">150cm</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;">
+                <div class="sil-sensor">📡</div>
+                <div class="sil-person">
+                  <div class="sil-head"></div>
+                  <div class="sil-body" style="height:130px;"></div>
+                </div>
+                <div class="sil-label">SUBJECT</div>
+              </div>
+              <div class="sil-arrow">
+                <div style="color:var(--orange);font-size:11px;">Sensor</div>
+                <div style="font-size:18px;color:var(--orange);">220cm</div>
+                <div style="margin:8px 0;color:var(--muted);">↕</div>
+                <div style="color:var(--accent);font-size:11px;">Distance</div>
+                <div style="font-size:18px;color:var(--accent);">45.5cm</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <ul class="bullets">
+              <li><div class="ico">📏</div><div><strong>The ruler on the left</strong> — a scale showing heights from 150cm to 220cm. The highlighted ticks (in cyan) are at 160, 180, 200cm as reference points.</div></li>
+              <li><div class="ico">📡</div><div><strong>The sensor icon at top</strong> — represents your physical HC-SR04 sensor mounted on the ceiling/frame above the person.</div></li>
+              <li><div class="ico">🧍</div><div><strong>The person figure</strong> — the bar height <em>animates</em> in real time to match the estimated height. Taller reading = taller bar. The head circle changes colour based on confidence (green = high, orange = medium).</div></li>
+              <li><div class="ico">🟠</div><div><strong>Sensor Height (orange)</strong> — how high the sensor is physically mounted above the floor. You set this in the Config panel. Default is 220cm.</div></li>
+              <li><div class="ico">🔵</div><div><strong>Distance to Head (cyan)</strong> — what the ML model predicted as the gap between sensor and top of person's head.</div></li>
+            </ul>
+            <div class="highlight-box orange" style="margin-top:16px;">
+              ⚠️ IMPORTANT: If your sensor height is wrong,<br/>
+              ALL height estimates will be wrong!<br/><br/>
+              Physically measure with a tape:<br/>
+              floor → sensor = your SENSOR_HEIGHT value
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- ===================== 4. STATS ===================== -->
+  <div class="section" id="stats">
+    <div class="section-number">4</div>
+    <div class="section-title">The Signal Statistics Panel</div>
+    <div class="section-sub">TOP RIGHT — RAW NUMBERS FROM THE SENSOR BATCH</div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📊</div>
+        <div class="card-title">6 Key Numbers About the Sensor Readings</div>
+        <div class="card-tag">DIAGNOSTICS</div>
+      </div>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="mock">
+            <div class="mock-label">LIVE PREVIEW</div>
+            <div class="mock-stats" style="padding:8px;">
+              <div class="mock-stat"><div class="mock-stat-label">Mean Reading</div><div class="mock-stat-val" style="color:var(--text);">4523<span style="font-size:10px;color:var(--muted);"> µs</span></div></div>
+              <div class="mock-stat"><div class="mock-stat-label">Median</div><div class="mock-stat-val" style="color:var(--text);">4412<span style="font-size:10px;color:var(--muted);"> µs</span></div></div>
+              <div class="mock-stat"><div class="mock-stat-label">Variance</div><div class="mock-stat-val" style="color:var(--text);">1284</div></div>
+              <div class="mock-stat"><div class="mock-stat-label">Sample Count</div><div class="mock-stat-val" style="color:var(--text);">200</div></div>
+              <div class="mock-stat"><div class="mock-stat-label">Min Reading</div><div class="mock-stat-val" style="color:var(--text);">0<span style="font-size:10px;color:var(--muted);"> µs</span></div></div>
+              <div class="mock-stat"><div class="mock-stat-label">Max Reading</div><div class="mock-stat-val" style="color:var(--text);">11500<span style="font-size:10px;color:var(--muted);"> µs</span></div></div>
+            </div>
+          </div>
+          <div>
+            <ul class="bullets">
+              <li><div class="ico">〰️</div><div><strong>Mean Reading (µs)</strong> — the simple average of all 200 sensor readings. µs = microseconds = how long the sound took to bounce back. <em>Larger = farther away.</em></div></li>
+              <li><div class="ico">➗</div><div><strong>Median</strong> — the middle value when all readings are sorted. <strong>More reliable than mean</strong> because it ignores extreme outliers caused by hair.</div></li>
+              <li><div class="ico">📉</div><div><strong>Variance</strong> — how spread out the readings are. Low variance (e.g. 12) = very consistent readings = good signal. High variance (e.g. 3500) = messy readings = lots of hair interference.</div></li>
+              <li><div class="ico">🔢</div><div><strong>Sample Count</strong> — how many readings were in this batch. Usually 200 (from ESP8266). More samples = better ML prediction.</div></li>
+              <li><div class="ico">⬇️</div><div><strong>Min Reading</strong> — the smallest echo time. 0 means at least one reading completely failed (sensor got no echo back).</div></li>
+              <li><div class="ico">⬆️</div><div><strong>Max Reading</strong> — the largest echo time. Values near 11500µs mean the sound hit the ceiling or shoulders instead of the head.</div></li>
+            </ul>
+          </div>
+        </div>
+        <div class="highlight-box blue" style="margin-top:20px;">
+          💡 WHY MICROSECONDS (µs)?<br/><br/>
+          The sensor measures time, not distance directly.<br/>
+          Time → Distance formula: distance (cm) = duration (µs) × 0.0343 / 2<br/><br/>
+          Example: 4412 µs → 4412 × 0.0343 / 2 = 75.7 cm from sensor to head<br/>
+          Then: height = 220 - 75.7 = 144.3 cm<br/><br/>
+          But the ML model handles this conversion automatically — you don't need to do the math!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- ===================== 5. NOISE BARS ===================== -->
+  <div class="section" id="noise">
+    <div class="section-number">5</div>
+    <div class="section-title">Noise Distribution Bars</div>
+    <div class="section-sub">INSIDE STATS PANEL — SHOWS WHERE THE 200 READINGS ACTUALLY WENT</div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🎛️</div>
+        <div class="card-title">3 Bars That Tell You About Signal Quality</div>
+        <div class="card-tag">SIGNAL QUALITY</div>
+      </div>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="mock">
+            <div class="mock-label">LIVE PREVIEW</div>
+            <div class="mock-noise" style="padding:12px;">
+              <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;">Noise Distribution</div>
+              <div class="mock-noise-row">
+                <div class="mock-noise-label">Valid signal</div>
+                <div class="mock-noise-track"><div class="mock-noise-fill" style="width:68%;background:var(--green);"></div></div>
+                <div class="mock-noise-pct" style="color:var(--green);">68%</div>
+              </div>
+              <div class="mock-noise-row">
+                <div class="mock-noise-label">High noise</div>
+                <div class="mock-noise-track"><div class="mock-noise-fill" style="width:24%;background:var(--orange);"></div></div>
+                <div class="mock-noise-pct" style="color:var(--orange);">24%</div>
+              </div>
+              <div class="mock-noise-row">
+                <div class="mock-noise-label">Zero/failed</div>
+                <div class="mock-noise-track"><div class="mock-noise-fill" style="width:8%;background:var(--red);"></div></div>
+                <div class="mock-noise-pct" style="color:var(--red);">8%</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <ul class="bullets">
+              <li>
+                <div class="ico">🟢</div>
+                <div>
+                  <strong>Valid Signal (green)</strong> — % of readings that bounced off the head cleanly and came back in the expected range (0–6000µs). This is the useful data. <em>Higher = better.</em>
+                  <div class="highlight-box green" style="margin-top:8px;font-size:11px;">
+                    &gt;70% valid = great 🎉<br/>
+                    50-70% valid = ok, some hair noise<br/>
+                    &lt;50% valid = thick hair, low confidence
+                  </div>
+                </div>
+              </li>
+              <li>
+                <div class="ico">🟠</div>
+                <div>
+                  <strong>High Noise (orange)</strong> — % of readings &gt;9000µs. These are echoes that went past the head and bounced off the ceiling, walls, or shoulders instead. Common with thick hair because the hair absorbs the direct echo.
+                </div>
+              </li>
+              <li>
+                <div class="ico">🔴</div>
+                <div>
+                  <strong>Zero/Failed (red)</strong> — % of readings that came back as 0. This means the sensor fired the pulse but received NO echo at all — completely absorbed by hair. Some zeroes are normal; lots of zeroes means very dense hair.
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="anno" style="margin-top:20px;">
+          <div class="anno-arrow">🧠</div>
+          <div class="anno-text">These three percentages are actually the <strong>most important features the ML model uses</strong> to make its prediction! The model learned from your dataset that a specific mix of these percentages corresponds to a specific real distance.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- ===================== 6. SIGNAL STRIP ===================== -->
+  <div class="section" id="signal">
+    <div class="section-number">6</div>
+    <div class="section-title">Live Signal Strip</div>
+    <div class="section-sub">BOTTOM OF STATS PANEL — VISUAL HEARTBEAT OF THE SENSOR</div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">📈</div>
+        <div class="card-title">The Animated Bar Chart</div>
+        <div class="card-tag">VISUAL ONLY</div>
+      </div>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="mock">
+            <div class="mock-label">LIVE PREVIEW</div>
+            <div style="padding:12px;">
+              <div style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">Live Signal</div>
+              <div class="mock-signal">
+                <div class="mock-signal-bar" style="height:28px;background:var(--green);"></div>
+                <div class="mock-signal-bar" style="height:20px;background:var(--green);"></div>
+                <div class="mock-signal-bar" style="height:32px;background:var(--green);"></div>
+                <div class="mock-signal-bar" style="height:14px;background:var(--orange);"></div>
+                <div class="mock-signal-bar" style="height:26px;background:var(--green);"></div>
+                <div class="mock-signal-bar" style="height:30px;background:var(--green);"></div>
+                <div class="mock-signal-bar" style="height:8px;background:var(--red);"></div>
+                <div class="mock-signal-bar" style="height:24px;background:var(--green);"></div>
+                <div class="mock-signal-bar" style="height:28px;background:var(--green);"></div>
+                <div class="mock-signal-bar" style="height:18px;background:var(--orange);"></div>
+                <div class="mock-signal-bar" style="height:30px;background:var(--green);"></div>
+                <div class="mock-signal-bar" style="height:22px;background:var(--green);"></div>
+                <div class="mock-signal-bar" style="height:32px;background:var(--green);"></div>
+                <div class="mock-signal-bar" style="height:26px;background:var(--green);"></div>
+                <div class="mock-signal-bar" style="height:10px;background:var(--red);"></div>
+                <div class="mock-signal-bar" style="height:28px;background:var(--green);"></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <p class="explain">This is a <strong>visual representation</strong> of the sensor signal — think of it like a heartbeat monitor but for sound waves.</p>
+            <ul class="bullets" style="margin-top:12px;">
+              <li><div class="ico">🟢</div><div><strong>Tall green bars</strong> — strong, valid echoes coming back from the head. Good signal quality.</div></li>
+              <li><div class="ico">🟠</div><div><strong>Medium orange bars</strong> — readings in the noisy range. Sound bounced somewhere unexpected.</div></li>
+              <li><div class="ico">🔴</div><div><strong>Short red bars</strong> — failed or zero readings. Sound got absorbed by hair.</div></li>
+            </ul>
+            <div class="highlight-box purple" style="margin-top:16px;">
+              ℹ️ This strip regenerates every time a new batch arrives from the ESP8266. It's a quick visual health check — if you see mostly green bars, your signal is clean. Mostly red = move the sensor or ask the person to hold still.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- ===================== 7. CONFIG ===================== -->
+  <div class="section" id="config">
+    <div class="section-number">7</div>
+    <div class="section-title">Sensor Configuration Panel</div>
+    <div class="section-sub">BOTTOM LEFT — SETTINGS THAT AFFECT HOW HEIGHT IS CALCULATED</div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">⚙️</div>
+        <div class="card-title">3 Settings You Can Adjust</div>
+        <div class="card-tag">SETTINGS</div>
+      </div>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="mock">
+            <div class="mock-label">LIVE PREVIEW</div>
+            <div class="mock-config" style="padding:12px;">
+              <div class="mock-config-row">
+                <div class="mock-config-label">Sensor Height (cm)</div>
+                <input class="mock-config-input" value="220"/>
+              </div>
+              <div class="mock-config-row">
+                <div class="mock-config-label">Surface Type</div>
+                <div class="mock-toggle">
+                  <button class="mock-toggle-opt active">🦱 Head (Hair)</button>
+                  <button class="mock-toggle-opt">▭ Flat</button>
+                </div>
+              </div>
+              <div class="mock-config-row">
+                <div class="mock-config-label">Poll Interval</div>
+                <div class="mock-toggle">
+                  <button class="mock-toggle-opt active">1s</button>
+                  <button class="mock-toggle-opt">2s</button>
+                  <button class="mock-toggle-opt">5s</button>
+                </div>
+              </div>
+              <div style="background:#050810;border:1px solid var(--border);border-radius:8px;padding:10px;margin-top:8px;">
+                <div style="font-family:var(--mono);font-size:8px;color:var(--muted);margin-bottom:6px;letter-spacing:1px;">API ENDPOINT</div>
+                <div style="font-family:var(--mono);font-size:10px;color:var(--accent);">http://172.22.196.91:5000/latest</div>
+                <div style="font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:6px;">ESP8266 POST → <span style="color:var(--orange);">/predict</span></div>
+                <div style="font-family:var(--mono);font-size:9px;color:var(--muted);">Dashboard GET → <span style="color:var(--green);">/latest</span></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <ul class="bullets">
+              <li>
+                <div class="ico">📐</div>
+                <div>
+                  <strong>Sensor Height (cm)</strong> — The physical distance from your sensor to the floor. <em>This is the most critical setting.</em> Measure it with a tape measure. If this is wrong by 5cm, every height reading will be wrong by 5cm too.
+                  <div class="highlight-box orange" style="margin-top:8px;font-size:11px;">
+                    ✏️ You also need to set this in the ESP8266 firmware:<br/>
+                    const float SENSOR_HEIGHT_CM = 220.0;
+                  </div>
+                </div>
+              </li>
+              <li>
+                <div class="ico">🦱</div>
+                <div>
+                  <strong>Surface Type toggle</strong> — "Head (Hair)" or "Flat". This tells the ML model what kind of surface it's measuring. Hair = use noise-handling logic. Flat = cleaner signal expected. This is sent to the backend with every request.
+                </div>
+              </li>
+              <li>
+                <div class="ico">⏱️</div>
+                <div>
+                  <strong>Poll Interval</strong> — How often the dashboard asks the backend for new data. 1s = updates every second (more responsive but more network requests). 5s = updates every 5 seconds (less responsive but lighter).
+                </div>
+              </li>
+              <li>
+                <div class="ico">🔗</div>
+                <div>
+                  <strong>API Endpoint display</strong> — shows the exact URLs being used. The dashboard fetches from <em>/latest</em> and the ESP8266 posts to <em>/predict</em>. Just for reference — you can't edit this here.
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- ===================== 8. HISTORY ===================== -->
+  <div class="section" id="history">
+    <div class="section-number">8</div>
+    <div class="section-title">Measurement History Table</div>
+    <div class="section-sub">BOTTOM RIGHT — A LOG OF ALL RECENT MEASUREMENTS</div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">🗃️</div>
+        <div class="card-title">The Last 50 Readings</div>
+        <div class="card-tag">HISTORY LOG</div>
+      </div>
+      <div class="card-body">
+        <div class="two-col">
+          <div class="mock">
+            <div class="mock-label">LIVE PREVIEW</div>
+            <div style="padding:8px;overflow:auto;">
+              <table class="mock-table">
+                <thead>
+                  <tr><th>Time</th><th>Height (cm)</th><th>Distance (cm)</th><th>Confidence</th><th>Method</th></tr>
+                </thead>
+                <tbody>
+                  <tr style="color:var(--accent)">
+                    <td>22:14:32</td><td>174.5</td><td>45.5</td>
+                    <td><span style="background:rgba(0,255,135,0.15);color:var(--green);padding:2px 7px;border-radius:999px;font-size:8px;font-weight:700;">HIGH</span></td>
+                    <td style="color:var(--muted)">ML</td>
+                  </tr>
+                  <tr><td>22:14:27</td><td>173.8</td><td>46.2</td>
+                    <td><span style="background:rgba(0,255,135,0.15);color:var(--green);padding:2px 7px;border-radius:999px;font-size:8px;font-weight:700;">HIGH</span></td>
+                    <td style="color:var(--muted)">ML</td>
+                  </tr>
+                  <tr><td>22:14:22</td><td>176.1</td><td>43.9</td>
+                    <td><span style="background:rgba(255,107,53,0.15);color:var(--orange);padding:2px 7px;border-radius:999px;font-size:8px;font-weight:700;">MEDIUM</span></td>
+                    <td style="color:var(--muted)">ML</td>
+                  </tr>
+                  <tr><td>22:14:17</td><td>169.2</td><td>50.8</td>
+                    <td><span style="background:rgba(255,61,90,0.15);color:var(--red);padding:2px 7px;border-radius:999px;font-size:8px;font-weight:700;">LOW</span></td>
+                    <td style="color:var(--muted)">ML</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <ul class="bullets">
+              <li><div class="ico">🕐</div><div><strong>Time</strong> — exact timestamp when the ESP8266 sent that batch of readings. The <strong style="color:var(--accent);">most recent row is highlighted in cyan</strong> so you can instantly spot the latest reading.</div></li>
+              <li><div class="ico">📏</div><div><strong>Height (cm)</strong> — the final estimated height output from the ML model for that reading.</div></li>
+              <li><div class="ico">↕️</div><div><strong>Distance (cm)</strong> — sensor to head distance that the model predicted. Height = Sensor Height − this number.</div></li>
+              <li><div class="ico">🎯</div><div><strong>Confidence pill</strong> — HIGH / MEDIUM / LOW for each reading. Lets you see if the sensor was having a good or bad session over time.</div></li>
+              <li><div class="ico">🤖</div><div><strong>Method</strong> — "ML" = Random Forest model was used. "Median" = fallback method was used (model wasn't loaded). You always want to see "ML" here.</div></li>
+            </ul>
+            <div class="highlight-box green" style="margin-top:16px;">
+              💡 USE THIS TABLE TO:<br/><br/>
+              • See if readings are stable over time (good sign)<br/>
+              • Spot if one reading was a random outlier<br/>
+              • Check if confidence is consistently LOW (might need to reposition sensor)<br/>
+              • The table keeps the last 50 readings in memory
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- FULL FLOW SUMMARY -->
+  <div class="section">
+    <div class="section-number">✅</div>
+    <div class="section-title">Everything Together — The Full Flow</div>
+    <div class="section-sub">HOW ALL THE PANELS CONNECT TO EACH OTHER</div>
+    <div class="card">
+      <div class="card-body">
+        <div class="flow">
+          <div class="flow-step"><strong>ESP8266</strong>fires 200 pulses</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><strong>app.py</strong>ML predicts distance</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><strong>Height</strong>220 − distance = cm</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><strong>Ring</strong>fills up</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><strong>Stats</strong>update</div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><strong>History</strong>new row added</div>
+        </div>
+        <div class="highlight-box blue" style="margin-top:20px;">
+          Every 5 seconds the ESP8266 sends 200 readings → backend predicts height → dashboard fetches it → ALL panels update at once. That's the full cycle.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function scrollTo(id) {
+  document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apple Freshness Monitor</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Epilogue:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<style>
+:root {
+--fresh:#2d9e6b;
+--fresh-bg:#edfaf3;
+--ripe:#d97706;
+--ripe-bg:#fef9ee;
+--spoiled:#dc2626;
+--spoiled-bg:#fff1f1;
+--card-bg:#fffdf9;
+--border:#f0e8df;
+--text:#1c1410;
+--muted:#9b8b7a;
+--accent:#c84b2f;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+body{
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+font-family:'Epilogue',sans-serif;
+background:#fdf6ee;
+padding:2rem
+}
+
+.card{
+background:var(--card-bg);
+border:1px solid var(--border);
+border-radius:28px;
+width:100%;
+max-width:420px;
+padding:2rem;
+box-shadow:0 24px 60px #c84b2f14
+}
+
+.title{
+font-family:'Playfair Display',serif;
+font-size:1.6rem;
+font-weight:900;
+margin-bottom:4px
+}
+
+.subtitle{
+font-size:.7rem;
+letter-spacing:.2em;
+text-transform:uppercase;
+color:var(--muted)
+}
+
+.status-hero{
+border-radius:18px;
+padding:1.2rem;
+margin:1.5rem 0;
+display:flex;
+justify-content:space-between;
+align-items:center
+}
+
+.status-hero.fresh{background:var(--fresh-bg);color:var(--fresh)}
+.status-hero.ripening{background:var(--ripe-bg);color:var(--ripe)}
+.status-hero.spoiled{background:var(--spoiled-bg);color:var(--spoiled)}
+
+.status-value{
+font-family:'Playfair Display',serif;
+font-size:1.8rem;
+font-weight:700
+}
+
+.sensor-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-bottom:1.5rem
+}
+
+.sensor-card{
+background:#fff;
+border:1px solid var(--border);
+border-radius:12px;
+padding:.9rem
+}
+
+.sensor-name{
+font-size:.65rem;
+letter-spacing:.15em;
+text-transform:uppercase;
+color:var(--muted)
+}
+
+.sensor-val{
+font-family:'Playfair Display',serif;
+font-size:1.3rem;
+font-weight:700
+}
+
+.risk-section{
+margin-bottom:1.5rem
+}
+
+.bar-track{
+height:8px;
+background:#f0e8df;
+border-radius:99px;
+overflow:hidden
+}
+
+.bar-fill{
+height:100%;
+width:0%;
+background:var(--fresh);
+transition:width .6s
+}
+
+.card-footer{
+display:flex;
+justify-content:space-between;
+font-size:.7rem;
+color:var(--muted);
+border-top:1px solid var(--border);
+padding-top:1rem
+}
+
+/* ── Confidence Ring Fix ── */
+.conf-ring {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+}
+
+.conf-ring svg {
+  transform: rotate(-90deg);
+  display: block;
+}
+
+.conf-ring circle {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.track { stroke: #00000015; }
+
+.fill {
+  stroke: var(--fresh);
+  /* dasharray/offset set via JS using correct CIRC */
+  transition: stroke-dashoffset .6s;
+}
+
+.conf-pct {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: .72rem;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<div class="title">🍎 Apple Freshness</div>
+<div class="subtitle">Fruit Monitor</div>
+
+<div class="status-hero fresh" id="status-hero">
+  <div>
+    <div class="status-value" id="label">Waiting...</div>
+  </div>
+
+  <!-- SVG: viewBox 72×72, cx/cy=36, r=29, strokeWidth=5  →  r+strokeWidth/2 = 31.5 < 36 ✓ -->
+  <div class="conf-ring">
+    <svg width="72" height="72" viewBox="0 0 72 72">
+      <circle class="track" cx="36" cy="36" r="29"/>
+      <circle class="fill" id="ring-fill" cx="36" cy="36" r="29"/>
+    </svg>
+    <div class="conf-pct"><span id="conf-num">0</span>%</div>
+  </div>
+</div>
+
+<div class="sensor-grid">
+
+<div class="sensor-card">
+<div class="sensor-name">Temperature</div>
+<div class="sensor-val"><span id="temp">—</span> °C</div>
+</div>
+
+<div class="sensor-card">
+<div class="sensor-name">Humidity</div>
+<div class="sensor-val"><span id="hum">—</span> %</div>
+</div>
+
+<div class="sensor-card" style="grid-column:span 2">
+<div class="sensor-name">MQ135 Gas</div>
+<div class="sensor-val"><span id="mq">—</span></div>
+</div>
+
+</div>
+
+<div class="risk-section">
+
+<div style="display:flex;justify-content:space-between;margin-bottom:5px">
+<div style="font-size:.7rem;color:var(--muted)">Spoilage Risk</div>
+<div id="risk-pct">0%</div>
+</div>
+
+<div class="bar-track">
+<div class="bar-fill" id="bar-fill"></div>
+</div>
+
+</div>
+
+<div class="card-footer">
+<div>Updated <span id="time">—</span></div>
+<div>ML Powered</div>
+</div>
+
+</div>
+
+<script>
+
+// r=29 → circumference = 2π×29
+const CIRC = 2 * Math.PI * 29;
+
+const ringFill = document.getElementById("ring-fill");
+ringFill.style.strokeDasharray  = CIRC;
+ringFill.style.strokeDashoffset = CIRC; // start empty
+
+// Firebase config
+const firebaseConfig = {
+apiKey:"AIzaSyCz53tTQrZUAlxMj0F7SXz4vHH_sObwllY",
+authDomain:"applemonitor-d8626.firebaseapp.com",
+databaseURL:"https://applemonitor-d8626-default-rtdb.firebaseio.com",
+projectId:"applemonitor-d8626",
+storageBucket:"applemonitor-d8626.firebasestorage.app",
+messagingSenderId:"483774283255",
+appId:"1:483774283255:web:a9fc580b01c6a0b69282f2"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const sensorRef = db.ref("sensor_data").limitToLast(1);
+
+sensorRef.on("child_added", function(snapshot){
+  const data = snapshot.val();
+  document.getElementById("label").innerText   = data.label;
+  document.getElementById("conf-num").innerText = data.confidence;
+  document.getElementById("temp").innerText     = data.temp;
+  document.getElementById("hum").innerText      = data.hum;
+  document.getElementById("mq").innerText       = data.mq135;
+  document.getElementById("time").innerText     = data.timestamp;
+  setConf(data.confidence);
+  setStatus(data.label, data.spoilage_percent);
+});
+
+function setStatus(label, pct){
+  const hero    = document.getElementById("status-hero");
+  const fill    = document.getElementById("ring-fill");
+  const bar     = document.getElementById("bar-fill");
+  const riskPct = document.getElementById("risk-pct");
+
+  hero.className = "status-hero";
+
+  let statusClass = "fresh";
+  if(label.toLowerCase() == "ripening") statusClass = "ripening";
+  if(label.toLowerCase() == "spoiled")  statusClass = "spoiled";
+
+  hero.classList.add(statusClass);
+
+  const colours = {
+    fresh:    "#2d9e6b",
+    ripening: "#d97706",
+    spoiled:  "#dc2626"
+  };
+
+  fill.style.stroke     = colours[statusClass];
+  bar.style.background  = colours[statusClass];
+  bar.style.width       = pct + "%";
+  riskPct.innerText     = pct + "%";
+  riskPct.style.color   = colours[statusClass];
+}
+
+function setConf(val){
+  const fill = document.getElementById("ring-fill");
+  fill.style.strokeDashoffset = CIRC - (CIRC * (val / 100));
+}
+
+</script>
+
+</body>
+</html>
