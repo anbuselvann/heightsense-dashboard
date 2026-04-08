@@ -1,6 +1,7 @@
 flask
 flask-cors
-scikit-learn
 numpy
+scikit-learn
 pandas
+gunicorn
 openpyxl
