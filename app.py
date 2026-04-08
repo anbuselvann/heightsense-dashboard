@@ -152,10 +152,6 @@ def latest():
 def get_history():
     return jsonify(list(history))
 
-@app.route('/')
-def home():
-    return jsonify({"message": "Height Estimation API is running 🚀"})
-
 # ---------- Run ----------
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
