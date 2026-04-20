@@ -144,7 +144,7 @@ def predict():
         confidence = "low"
 
     # FIX: object height = sensor height - distance to object top
-    estimated_height = max(0.0, round(sensor_height - estimated_distance, 1))
+    estimated_height = round(estimated_distance, 1)
 
     # FIX: build raw_stats and include in result so /latest serves it to dashboard
     raw_stats = {
