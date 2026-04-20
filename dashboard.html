@@ -15,7 +15,7 @@
     --accent:    #2563eb;
     --accent2:   #3b82f6;
     --green:     #27ae60;
-    --orange:    #e67e22;
+    --orange:    #3b82f6;
     --red:       #e74c3c;
     --text:      #1a1612;
     --text2:     #4a4540;
@@ -100,6 +100,7 @@
   }
   .status-label { font-family: var(--mono); font-size: 11px; color: var(--muted); }
 
+  /* Firebase status badge */
   .firebase-status {
     display: flex;
     align-items: center;
@@ -286,7 +287,7 @@
     border-radius: 4px 4px 0 0;
     transition: height 1s cubic-bezier(0.34,1.56,0.64,1);
     position: relative;
-    min-height: 4px;
+    min-height: 20px;
     opacity: 0.85;
   }
   .figure-head {
@@ -362,8 +363,8 @@
     border-radius: 2px 2px 0 0;
     background: var(--accent);
     min-height: 2px;
-    transition: height 0.3s ease;
-    opacity: 0.7;
+    transition: height 0.1s ease;
+    opacity: 0.6;
   }
 
   /* ---- CONFIG ---- */
@@ -487,7 +488,7 @@
   .fb-log-entry:last-child { border-bottom: none; }
   .fb-log-entry.ok    { color: var(--green); }
   .fb-log-entry.error { color: var(--red); }
-  .fb-log-time { color: var(--muted); min-width: 70px; }
+  .fb-log-time { color: var(--muted); min-width: 60px; }
 
   /* ---- SCAN LINE ---- */
   @keyframes scan {
@@ -506,18 +507,6 @@
   }
 
   .section-divider { height: 1px; background: var(--border); margin: 18px 0; }
-
-  /* ---- IST clock ---- */
-  .ist-clock {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 5px 10px;
-    letter-spacing: 0.5px;
-  }
 
   @media (max-width: 1100px) {
     .grid-top    { grid-template-columns: 1fr 1fr; }
@@ -548,8 +537,6 @@
       </div>
     </div>
     <div class="header-status">
-      <!-- FIX: IST live clock -->
-      <div class="ist-clock" id="istClock">IST --:--:--</div>
       <div class="firebase-status">
         <div class="firebase-dot" id="firebaseDot"></div>
         <span id="firebaseLabel">FIREBASE INIT</span>
@@ -559,8 +546,8 @@
         <div class="status-label" id="statusLabel">DISCONNECTED</div>
       </div>
       <div class="server-input">
-        <input type="text" id="serverUrl" value="https://heightsense-dashboard.onrender.com" placeholder="https://..."/>
-        <button class="btn" id="connectBtn" onclick="togglePolling()">CONNECT</button>
+        <input type="text" id="serverUrl" value="https://heightsense-dashboard.onrender.com" placeholder="https://heightsense-dashboard.onrender.com"/>
+        <button class="btn" onclick="togglePolling()">CONNECT</button>
       </div>
     </div>
   </header>
@@ -570,7 +557,7 @@
 
     <!-- Height Display -->
     <div class="panel height-panel">
-      <div class="panel-label">Estimated Height / Object Height</div>
+      <div class="panel-label">Estimated Height</div>
       <div class="height-ring">
         <svg viewBox="0 0 200 200">
           <defs>
@@ -596,29 +583,28 @@
     <div class="panel silhouette-panel">
       <div class="scan-line"></div>
       <div class="ruler">
-        <!-- FIX: ruler scaled for small object range 0–35 cm -->
-        <div class="ruler-tick">35cm</div>
-        <div class="ruler-tick highlight">30cm</div>
-        <div class="ruler-tick">25cm</div>
-        <div class="ruler-tick highlight">20cm</div>
-        <div class="ruler-tick">15cm</div>
-        <div class="ruler-tick highlight">10cm</div>
-        <div class="ruler-tick">5cm</div>
-        <div class="ruler-tick">0cm</div>
+        <div class="ruler-tick">220cm</div>
+        <div class="ruler-tick">210cm</div>
+        <div class="ruler-tick highlight">200cm</div>
+        <div class="ruler-tick">190cm</div>
+        <div class="ruler-tick highlight">180cm</div>
+        <div class="ruler-tick">170cm</div>
+        <div class="ruler-tick highlight">160cm</div>
+        <div class="ruler-tick">150cm</div>
       </div>
       <div class="silhouette-wrap">
         <div class="sensor-icon">📡</div>
         <div class="silhouette-figure">
           <div class="figure-head" id="figHead"></div>
-          <div class="figure-bar" id="figBar" style="height:4px;"></div>
+          <div class="figure-bar" id="figBar" style="height:160px;"></div>
         </div>
-        <div class="silhouette-label">OBJECT</div>
+        <div class="silhouette-label">SUBJECT</div>
       </div>
       <div class="sil-info">
         <div class="sil-info-label">Sensor height</div>
-        <div class="sil-info-val" style="color:#3b82f6;" id="sensorHgt">30 cm</div>
+        <div class="sil-info-val" style="color:#3b82f6;" id="sensorHgt">220 cm</div>
         <div style="height:12px;"></div>
-        <div class="sil-info-label">Distance to top</div>
+        <div class="sil-info-label">Distance to head</div>
         <div class="sil-info-val" style="color:var(--accent);" id="distanceVal">-- cm</div>
       </div>
     </div>
@@ -628,7 +614,7 @@
       <div class="panel-label">Signal Statistics</div>
       <div class="stats-grid">
         <div class="stat-item">
-          <div class="stat-label">Mean</div>
+          <div class="stat-label">Mean Reading</div>
           <div class="stat-value" id="statMean">--<span> µs</span></div>
         </div>
         <div class="stat-item">
@@ -672,10 +658,7 @@
         </div>
       </div>
       <div class="section-divider"></div>
-      <div class="panel-label">Live Signal
-        <!-- FIX: last updated timestamp in IST -->
-        <span style="float:right;font-size:9px;color:var(--muted);" id="lastUpdatedLabel"></span>
-      </div>
+      <div class="panel-label">Live Signal</div>
       <div class="signal-strip" id="signalStrip"></div>
     </div>
 
@@ -692,8 +675,7 @@
       </div>
       <div class="config-row">
         <div class="config-label">Sensor Height (cm)</div>
-        <!-- FIX: min changed from 50 to 5 to support small objects & 30cm setup -->
-        <input class="config-input" type="number" id="cfgSensorHeight" value="30" min="5" max="400"
+        <input class="config-input" type="number" id="cfgSensorHeight" value="220" min="100" max="300"
                oninput="onSensorHeightChange()"
                onchange="pushConfig()"/>
       </div>
@@ -714,7 +696,7 @@
       </div>
       <div class="api-info-box">
         <div class="panel-label" style="margin-bottom:8px;">API Endpoint</div>
-        <div style="font-family:var(--mono);font-size:11px;color:var(--accent);" id="apiEndpointDisplay">—</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--accent);" id="apiEndpointDisplay">http://localhost:5000/latest</div>
         <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:8px;">
           ESP8266 POST → <span style="color:var(--orange);font-weight:500;">/predict</span>
           &nbsp;&nbsp;(raw readings only)
@@ -731,12 +713,12 @@
 
     <!-- History + Firebase Log -->
     <div class="panel" style="overflow:hidden;">
-      <div class="panel-label">Measurement History (IST)</div>
+      <div class="panel-label">Measurement History</div>
       <div style="overflow-y:auto;max-height:200px;">
         <table class="history-table">
           <thead>
             <tr>
-              <th>Time (IST)</th>
+              <th>Time</th>
               <th>Height (cm)</th>
               <th>Distance (cm)</th>
               <th>Confidence</th>
@@ -762,7 +744,8 @@
 </div>
 
 <!-- ============================================================
-  FIREBASE SDK
+  FIREBASE SDK  (type="module")
+  Sets window globals so the regular script below can access them.
 ============================================================ -->
 <script type="module">
   import { initializeApp }          from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -776,65 +759,34 @@
     messagingSenderId: "497628849403",
     appId:             "1:497628849403:web:c5b68683c295927ab77c5e",
     measurementId:     "G-4GQRRN2VPD",
-    databaseURL:       "https://aiml-d4a2c-default-rtdb.asia-southeast1.firebasedatabase.app"
+    databaseURL:       "https://aiml-d4a2c-default-rtdb.asia-southeast1.firebasedatabase.app" 
   };
 
   try {
     const app = initializeApp(firebaseConfig);
     const db  = getDatabase(app);
+
     window._firebaseDB    = db;
     window._firebaseRef   = ref;
     window._firebasePush  = push;
     window._firebaseReady = true;
-    document.getElementById('firebaseDot').className     = 'firebase-dot ok';
+
+    document.getElementById('firebaseDot').className    = 'firebase-dot ok';
     document.getElementById('firebaseLabel').textContent = 'FIREBASE READY';
   } catch (err) {
     window._firebaseReady = false;
-    document.getElementById('firebaseDot').className     = 'firebase-dot error';
+    document.getElementById('firebaseDot').className    = 'firebase-dot error';
     document.getElementById('firebaseLabel').textContent = 'FIREBASE ERROR';
     console.error('Firebase init error:', err);
   }
 </script>
 
 <!-- ============================================================
-  MAIN DASHBOARD SCRIPT
+  MAIN DASHBOARD SCRIPT  (regular script — global scope)
+  updateDashboard() calls sendToFirebase() directly.
+  No monkey-patching needed.
 ============================================================ -->
 <script>
-// ====================================================
-// FIX: IST time helpers
-// IST = UTC+5:30
-// ====================================================
-function nowIST() {
-  var d = new Date();
-  // offset in ms: 5h30m = 19800000
-  var istMs = d.getTime() + (d.getTimezoneOffset() * 60000) + 19800000;
-  return new Date(istMs);
-}
-
-function fmtIST(date) {
-  // date is already adjusted to IST
-  var h  = String(date.getHours()).padStart(2, '0');
-  var m  = String(date.getMinutes()).padStart(2, '0');
-  var s  = String(date.getSeconds()).padStart(2, '0');
-  return h + ':' + m + ':' + s + ' IST';
-}
-
-function fmtISTFromISO(isoString) {
-  // isoString from server is server local time (UTC on Render)
-  // treat as UTC and convert to IST
-  var d = new Date(isoString);
-  if (isNaN(d.getTime())) return '--:--:--';
-  var istMs = d.getTime() + 19800000; // add 5h30m
-  var ist   = new Date(istMs);
-  return fmtIST(ist);
-}
-
-// FIX: Live IST clock in header
-setInterval(function() {
-  document.getElementById('istClock').textContent = 'IST ' + fmtIST(nowIST());
-}, 1000);
-document.getElementById('istClock').textContent = 'IST ' + fmtIST(nowIST());
-
 // ====================================================
 // State
 // ====================================================
@@ -845,10 +797,7 @@ var isHead          = true;
 var historyData     = [];
 var lastData        = null;
 var configPushTimer = null;
-var lastSentHeight  = null;
-
-// FIX: signal strip history buffer for smooth animation
-var signalHistory   = [];
+var lastSentHeight  = null;   // Firebase dedup
 
 var CONF_COLORS = {
   high:   { cls: 'conf-high',   label: '⬤ HIGH',   pill: '#1e8449', pillBg: '#eaf7ef' },
@@ -864,26 +813,31 @@ function sendToFirebase(height, confidence) {
     addFbLog('error', 'Firebase not ready');
     return;
   }
+
   var payload = {
     height:     height,
     confidence: confidence,
-    timestamp:  nowIST().toISOString()
+    timestamp:  new Date().toISOString()
   };
+
   setFirebaseDot('sending', 'SENDING...');
+
   var dbRef = window._firebaseRef(window._firebaseDB, 'measurements');
   window._firebasePush(dbRef, payload)
     .then(function() {
       setFirebaseDot('ok', 'FIREBASE OK');
       addFbLog('ok', height.toFixed(1) + ' cm  ·  ' + confidence);
+      console.log('✅ Firebase:', payload);
     })
     .catch(function(err) {
       setFirebaseDot('error', 'FIREBASE ERR');
       addFbLog('error', err.message);
+      console.error('❌ Firebase error:', err);
     });
 }
 
 function setFirebaseDot(state, label) {
-  document.getElementById('firebaseDot').className     = 'firebase-dot' + (state ? ' ' + state : '');
+  document.getElementById('firebaseDot').className    = 'firebase-dot' + (state ? ' ' + state : '');
   document.getElementById('firebaseLabel').textContent = label;
 }
 
@@ -894,8 +848,7 @@ function addFbLog(type, msg) {
 
   var t = document.createElement('span');
   t.className   = 'fb-log-time';
-  // FIX: IST time in Firebase log
-  t.textContent = fmtIST(nowIST());
+  t.textContent = new Date().toLocaleTimeString();
 
   var m = document.createElement('span');
   m.textContent = (type === 'ok' ? '✓ ' : '✗ ') + msg;
@@ -903,12 +856,10 @@ function addFbLog(type, msg) {
   entry.appendChild(t);
   entry.appendChild(m);
 
-  if (log.children.length === 1 && log.children[0].querySelector('.fb-log-time') &&
-      log.children[0].querySelector('.fb-log-time').textContent === '--:--:--') {
-    log.innerHTML = '';
-  }
+  // Clear placeholder on first real entry
+  if (log.children.length === 1) log.innerHTML = '';
 
-  log.insertBefore(entry, log.firstChild);
+  log.insertBefore(entry, log.firstChild);   // newest first
   while (log.children.length > 20) log.removeChild(log.lastChild);
 }
 
@@ -925,7 +876,7 @@ async function pushConfig() {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ sensor_height: h, is_head: isHead }),
-      signal:  AbortSignal.timeout(5000)
+      signal:  AbortSignal.timeout(4000)
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     setSyncState('synced', '✓ SYNCED');
@@ -939,7 +890,7 @@ async function pushConfig() {
 async function fetchConfig() {
   var url = getServerUrl();
   try {
-    var res = await fetch(url + '/config', { signal: AbortSignal.timeout(5000) });
+    var res = await fetch(url + '/config', { signal: AbortSignal.timeout(4000) });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     var cfg = await res.json();
     document.getElementById('cfgSensorHeight').value = cfg.sensor_height;
@@ -949,7 +900,7 @@ async function fetchConfig() {
     document.getElementById('toggleFlat').classList.toggle('active', !isHead);
     setSyncState('synced', '✓ CONFIG LOADED');
     setTimeout(function() { setSyncState('', '● CONNECTED'); }, 2000);
-    showToast('Config loaded: ' + cfg.sensor_height + ' cm');
+    showToast('Config loaded: ' + cfg.sensor_height + ' cm  ·  ' + (isHead ? 'Head' : 'Flat'));
   } catch (e) {
     console.warn('Config fetch failed:', e.message);
     await pushConfig();
@@ -966,7 +917,7 @@ function setSyncState(cls, label) {
 // Polling
 // ====================================================
 function getServerUrl() {
-  return document.getElementById('serverUrl').value.trim().replace(/\/$/, '');
+  return document.getElementById('serverUrl').value.trim();
 }
 
 function togglePolling() {
@@ -975,8 +926,7 @@ function togglePolling() {
 
 async function startPolling() {
   polling = true;
-  document.getElementById('connectBtn').textContent = 'DISCONNECT';
-  document.getElementById('apiEndpointDisplay').textContent = getServerUrl() + '/latest';
+  document.querySelector('.btn').textContent = 'DISCONNECT';
   setSyncState('syncing', '↑ CONNECTING...');
   await fetchConfig();
   fetchLatest();
@@ -986,7 +936,7 @@ async function startPolling() {
 function stopPolling() {
   polling = false;
   clearInterval(pollTimer);
-  document.getElementById('connectBtn').textContent = 'CONNECT';
+  document.querySelector('.btn').textContent = 'CONNECT';
   setStatus('disconnected');
   setSyncState('', '● NOT CONNECTED');
 }
@@ -1015,8 +965,9 @@ function setSurface(type) {
 
 async function fetchLatest() {
   var url = getServerUrl();
+  document.getElementById('apiEndpointDisplay').textContent = url + '/latest';
   try {
-    var res = await fetch(url + '/latest', { signal: AbortSignal.timeout(5000) });
+    var res = await fetch(url + '/latest', { signal: AbortSignal.timeout(4000) });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     var data = await res.json();
     if (data.status === 'no_data') { setStatus('live'); return; }
@@ -1030,72 +981,54 @@ async function fetchLatest() {
 }
 
 // ====================================================
-// Dashboard Update
-// FIX: all stats now come from data.raw_stats (server includes it in /latest)
-// FIX: ring scale adjusted for small object range (0–35 cm)
-// FIX: signal strip uses real variance/validPct from server
+// Dashboard Update — Firebase hook is built in here
 // ====================================================
 function updateDashboard(data) {
   lastData = data;
-
   var d       = data.estimated_distance;
   var conf    = data.confidence;
   var stats   = data.raw_stats || {};
   var sensorH = data.sensor_height || getSensorHeight();
   var h       = data.estimated_height;
 
-  // Height value
   document.getElementById('heightVal').textContent   = h.toFixed(1);
   document.getElementById('heightFeet').textContent  = cmToFeetIn(h);
   document.getElementById('distanceVal').textContent = d.toFixed(1) + ' cm';
   document.getElementById('sensorHgt').textContent   = sensorH + ' cm';
 
-  // Sync config input if server sent a different value
   if (Math.abs(parseFloat(document.getElementById('cfgSensorHeight').value) - sensorH) > 0.5) {
     document.getElementById('cfgSensorHeight').value = sensorH;
   }
 
-  // FIX: ring fills based on 0–sensorH range (not 100–220 cm range for people)
-  var pct = Math.min(Math.max(h / sensorH, 0), 1);
+  var pct = Math.min(Math.max((h - 100) / 120, 0), 1);
   document.getElementById('ringFill').style.strokeDashoffset = 565 * (1 - pct);
 
-  // Confidence badge
   var confEl = document.getElementById('confBadge');
   confEl.className   = 'confidence-badge ' + ((CONF_COLORS[conf] && CONF_COLORS[conf].cls) || 'conf-none');
   confEl.textContent = (CONF_COLORS[conf] && CONF_COLORS[conf].label) || '⬤ UNKNOWN';
 
-  // Method tag
   document.getElementById('methodTag').textContent =
-    (data.method === 'ml_model') ? '🤖 ML MODEL' : '📐 MEDIAN FALLBACK';
+    data.method === 'ml_model' ? '🤖 ML MODEL' : '📐 MEDIAN FALLBACK';
 
-  // FIX: figure bar scaled to small object range
-  var figH = Math.min(Math.max((h / sensorH) * 200, 4), 200);
+  var figH = Math.min(Math.max(((h - 100) / 130) * 220, 20), 220);
   document.getElementById('figBar').style.height      = figH + 'px';
   document.getElementById('figHead').style.background =
     conf === 'high' ? '#27ae60' : conf === 'medium' ? '#e67e22' : '#c0392b';
 
-  // FIX: signal statistics — these now come from server's raw_stats
-  document.getElementById('statMean').innerHTML    = (stats.mean    != null ? stats.mean    : '--') + '<span> µs</span>';
-  document.getElementById('statMedian').innerHTML  = (stats.median  != null ? stats.median  : '--') + '<span> µs</span>';
-  document.getElementById('statVar').textContent   = stats.variance != null ? stats.variance : '--';
-  document.getElementById('statCount').textContent = stats.count    != null ? stats.count    : '--';
-  document.getElementById('statMin').innerHTML     = (stats.min     != null ? stats.min     : '--') + '<span> µs</span>';
-  document.getElementById('statMax').innerHTML     = (stats.max     != null ? stats.max     : '--') + '<span> µs</span>';
+  document.getElementById('statMean').innerHTML    = (stats.mean    || '--') + '<span> µs</span>';
+  document.getElementById('statMedian').innerHTML  = (stats.median  || '--') + '<span> µs</span>';
+  document.getElementById('statVar').textContent   = stats.variance || '--';
+  document.getElementById('statCount').textContent = stats.count    || '--';
+  document.getElementById('statMin').innerHTML     = (stats.min     || '--') + '<span> µs</span>';
+  document.getElementById('statMax').innerHTML     = (stats.max     || '--') + '<span> µs</span>';
 
-  // FIX: noise bars from real server data
   var valid = stats.pct_valid      || 0;
   var high  = stats.pct_high_noise || 0;
   var zero  = stats.pct_zero       || 0;
   setNoiseBars(valid, high, zero);
-
-  // FIX: signal strip driven by real std and validPct — not random
   animateSignalStrip(stats.std || 0, valid);
 
-  // FIX: last updated in IST
-  var ts = data.timestamp ? fmtISTFromISO(data.timestamp) : fmtIST(nowIST());
-  document.getElementById('lastUpdatedLabel').textContent = 'Updated ' + ts;
-
-  // Firebase dedup
+  // ── Firebase: only send when height changes by > 0.5 cm ──
   if (!lastSentHeight || Math.abs(lastSentHeight - h) > 0.5) {
     sendToFirebase(h, conf);
     lastSentHeight = h;
@@ -1106,55 +1039,30 @@ function updateDashboard(data) {
 // Noise / Signal
 // ====================================================
 function setNoiseBars(valid, high, zero) {
-  document.getElementById('nValid').style.width    = Math.min(valid, 100) + '%';
-  document.getElementById('nHigh').style.width     = Math.min(high, 100)  + '%';
-  document.getElementById('nZero').style.width     = Math.min(zero, 100)  + '%';
+  document.getElementById('nValid').style.width    = valid + '%';
+  document.getElementById('nHigh').style.width     = high  + '%';
+  document.getElementById('nZero').style.width     = zero  + '%';
   document.getElementById('nValidPct').textContent = valid.toFixed(0) + '%';
   document.getElementById('nHighPct').textContent  = high.toFixed(0)  + '%';
   document.getElementById('nZeroPct').textContent  = zero.toFixed(0)  + '%';
 }
 
-// FIX: signal strip uses real std and valid% to draw bar heights
-// std is in µs — normalise to bar height (max 44px)
 function animateSignalStrip(std, validPct) {
   var strip = document.getElementById('signalStrip');
-
-  // Push new "frame" value
-  // scale: std up to ~500µs maps to bar heights 2–44px
-  var baseH   = Math.min(44, Math.max(2, (validPct / 100) * 30 + 4));
-  var jitter  = Math.min(std / 30, 20);  // proportional jitter from std
-  signalHistory.push({ baseH: baseH, jitter: jitter, validPct: validPct });
-  if (signalHistory.length > 48) signalHistory.shift();
-
-  // Redraw
-  var bars = strip.querySelectorAll('.signal-bar');
-  var needed = 48;
-  while (strip.children.length < needed) {
-    var b = document.createElement('div');
-    b.className = 'signal-bar';
-    strip.appendChild(b);
-  }
-  var allBars = strip.querySelectorAll('.signal-bar');
-  for (var i = 0; i < allBars.length; i++) {
-    var idx = signalHistory.length - allBars.length + i;
-    if (idx < 0 || idx >= signalHistory.length) {
-      allBars[i].style.height  = '2px';
-      allBars[i].style.opacity = '0.15';
-      allBars[i].style.background = '#2563eb';
-      continue;
-    }
-    var frame   = signalHistory[idx];
-    var h       = Math.min(44, Math.max(2, frame.baseH + (Math.random() * frame.jitter)));
-    var color   = frame.validPct > 70 ? '#27ae60' : frame.validPct > 35 ? '#e67e22' : '#e74c3c';
-    allBars[i].style.height     = h + 'px';
-    allBars[i].style.background = color;
-    allBars[i].style.opacity    = String(0.5 + Math.random() * 0.4);
+  strip.innerHTML = '';
+  for (var i = 0; i < 48; i++) {
+    var bar = document.createElement('div');
+    bar.className        = 'signal-bar';
+    var bh               = Math.min(Math.max(Math.random() * std * 0.01 + validPct * 0.4 + 4, 2), 44);
+    bar.style.height     = bh + 'px';
+    bar.style.background = validPct > 60 ? '#27ae60' : validPct > 30 ? '#e67e22' : '#e74c3c';
+    bar.style.opacity    = String(0.4 + Math.random() * 0.5);
+    strip.appendChild(bar);
   }
 }
 
 // ====================================================
 // History
-// FIX: timestamp displayed in IST
 // ====================================================
 function addToHistory(data) {
   historyData.unshift(data);
@@ -1169,8 +1077,7 @@ function renderHistory() {
     return;
   }
   tbody.innerHTML = historyData.map(function(d, i) {
-    // FIX: convert server UTC timestamp → IST for display
-    var t  = d.timestamp ? fmtISTFromISO(d.timestamp) : fmtIST(nowIST());
+    var t  = new Date(d.timestamp).toLocaleTimeString();
     var c  = CONF_COLORS[d.confidence] || {};
     var ps = 'background:' + (c.pillBg || '#f5f5f5') + ';color:' + (c.pill || '#999') + ';border:1px solid ' + (c.pillBg || '#eee') + ';';
     var fr = i === 0 ? 'style="color:var(--accent);font-weight:500;"' : '';
@@ -1201,8 +1108,7 @@ function setStatus(state) {
 // ====================================================
 function getSensorHeight() {
   var val = parseFloat(document.getElementById('cfgSensorHeight').value);
-  // FIX: min is now 5 cm, not 50
-  return isNaN(val) ? 30 : Math.min(Math.max(val, 5), 400);
+  return isNaN(val) ? 220 : Math.min(Math.max(val, 50), 400);
 }
 
 function onSensorHeightChange() {
@@ -1212,9 +1118,9 @@ function onSensorHeightChange() {
     var newH = Math.max(0, h - lastData.estimated_distance);
     document.getElementById('heightVal').textContent  = newH.toFixed(1);
     document.getElementById('heightFeet').textContent = cmToFeetIn(newH);
-    var pct = Math.min(Math.max(newH / h, 0), 1);
+    var pct = Math.min(Math.max((newH - 100) / 120, 0), 1);
     document.getElementById('ringFill').style.strokeDashoffset = 565 * (1 - pct);
-    var figH = Math.min(Math.max((newH / h) * 200, 4), 200);
+    var figH = Math.min(Math.max(((newH - 100) / 130) * 220, 20), 220);
     document.getElementById('figBar').style.height = figH + 'px';
   }
   clearTimeout(configPushTimer);
@@ -1228,7 +1134,6 @@ function cmToFeetIn(cm) {
   var totalIn = cm / 2.54;
   var ft      = Math.floor(totalIn / 12);
   var inch    = Math.round(totalIn % 12);
-  if (ft === 0 && inch === 0) return cm.toFixed(1) + ' cm';
   return ft + '\u2032 ' + inch + '\u2033';
 }
 
@@ -1256,7 +1161,7 @@ function showToast(msg) {
   toast._timer = setTimeout(function() {
     toast.style.opacity   = '0';
     toast.style.transform = 'translateX(-50%) translateY(20px)';
-  }, 2500);
+  }, 2000);
 }
 
 // ====================================================
@@ -1267,8 +1172,8 @@ function showToast(msg) {
   for (var i = 0; i < 48; i++) {
     var bar = document.createElement('div');
     bar.className        = 'signal-bar';
-    bar.style.height     = (Math.random() * 5 + 2) + 'px';
-    bar.style.opacity    = '0.12';
+    bar.style.height     = (Math.random() * 6 + 2) + 'px';
+    bar.style.opacity    = '0.15';
     bar.style.background = '#2563eb';
     strip.appendChild(bar);
   }
