@@ -83,7 +83,7 @@ def predict():
     if len(readings) < 5:
         return jsonify({"error": "Need at least 5 readings"}), 400
 
-    sensor_height = server_config['sensor_height']
+    sensor_height = data.get('sensor_height', server_config['sensor_height'])
     is_head = server_config['is_head']
 
     # Filter valid readings (non-zero, non-timeout)
